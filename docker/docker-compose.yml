@@ -1,0 +1,46 @@
+
+---
+
+## 5. `docker/`: Docker Support
+
+### `docker-compose.yml`
+
+```yaml
+version: '3'
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - iot_net
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: iotdb
+      MYSQL_USER: iotuser
+      MYSQL_PASSWORD: iotpass
+    ports:
+      - "3306:3306"
+    networks:
+      - iot_net
+    command: mysqld --sql_mode=""
+
+  cloud:
+    build: ./cloud
+    container_name: cloud
+    depends_on:
+      - mosquitto
+      - mysql
+    networks:
+      - iot_net
+
+networks:
+  iot_net:
